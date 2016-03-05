@@ -1,0 +1,18 @@
+CREATE TABLE stats(
+   steamid64     integer   primary key,
+   steamid       text,
+   name          text,
+   id            integer,
+   score         real,
+   lastscore     real,
+   deaths        integer,
+   lastdeaths    integer,
+   scoregain     real,
+   deathgain     integer,
+   joins         integer,
+   geo           text,
+   lat           real,
+   lon           real,
+   datapoints    integer,
+   datapointgain integer
+);
