@@ -1,5 +1,5 @@
 ## svenstats.pl for Sven Co-op servers (SvenDS)
-Log parser for Sven Co-op decicated servers (SvenDS) logs, to gather player statistics (name, score, deaths, country, etc.).
+Log parser for Sven Co-op dedicated servers (SvenDS) logs, to gather player statistics (name, score, deaths, country, etc.).
 
 ## Notes
 * Assumes default SvenDS log settings (log file rotation every 24h)
