@@ -11,7 +11,7 @@ Log parser for Sven Co-op dedicated servers (SvenDS) logs, to gather player stat
 * SvenDS log files
 * Perl >=5.16
   * Data::Dumper (for $debug = 1)
-  * Geo::IP (and [GeoCityLite.dat](https://dev.maxmind.com/geoip/legacy/geolite/))
+  * Geo::IP (and [GeoLiteCity.dat](https://dev.maxmind.com/geoip/legacy/geolite/))
   * DBI
   * DBD::SQLite
 * SQLite 3
