@@ -86,14 +86,14 @@ else {
          my $lastscore = $score->copy;
          my $idx       = $2.'x'.(defined $$stats{$3}{joins} ? $$stats{$3}{joins} : 1);
 
-         if ($score->bcmp($$stats{$3}{lastscore})) {
+         if ($score->bacmp($$stats{$3}{lastscore})) {
             if (exists $$stats{$3}{idx} && $idx eq $$stats{$3}{idx}) {
                my $diff = $score->bsub($$stats{$3}{lastscore});
-               $$stats{$3}{score}->badd($diff) unless($diff->babs > $maxinc);
+               $$stats{$3}{score}->badd($diff) unless($diff->copy->babs > $maxinc);
                say "old: $$stats{$3}{lastscore} | diff: $diff | new: $$stats{$3}{score}" if($debug);
             }
             else {
-               $$stats{$3}{score}->badd($score) unless($score->babs > $maxinc);
+               $$stats{$3}{score}->badd($score) unless($score->copy->babs > $maxinc);
                say "old: $$stats{$3}{lastscore} | diff: $score | new: $$stats{$3}{score}" if($debug);
             }
          }
@@ -130,7 +130,7 @@ unless ($debug) {
          my $record  = $gi->record_by_addr($$stats{$_}{ip});
 
          if ($record) {
-            $country = $record->country_code3;
+            $country = $record->country_code;
             $lat     = $record->latitude;
             $lon     = $record->longitude;
          }
