@@ -19,7 +19,7 @@ use Math::BigFloat;
 
 my $db     = "$ENV{'HOME'}/scstats/scstats.db";
 my $geo    = "$ENV{'HOME'}/scstats/GeoLiteCity.dat";
-my $maxinc = 300; # maximum score increase between two datapoints to prevent maps from setting arbitrary player scores
+my $maxinc = 300; # maximum score difference between two datapoints to prevent arbitrary player scores set by some maps
 my $debug  = 0;   # 1 prints debug output and won't use the DB
 
 ###
@@ -89,11 +89,11 @@ else {
          if ($score->bcmp($$stats{$3}{lastscore})) {
             if (exists $$stats{$3}{idx} && $idx eq $$stats{$3}{idx}) {
                my $diff = $score->bsub($$stats{$3}{lastscore});
-               $$stats{$3}{score}->badd($diff) unless($diff > $maxinc);
+               $$stats{$3}{score}->badd($diff) unless($diff->babs > $maxinc);
                say "old: $$stats{$3}{lastscore} | diff: $diff | new: $$stats{$3}{score}" if($debug);
             }
             else {
-               $$stats{$3}{score}->badd($score) unless($score > $maxinc);
+               $$stats{$3}{score}->badd($score) unless($score->babs > $maxinc);
                say "old: $$stats{$3}{lastscore} | diff: $score | new: $$stats{$3}{score}" if($debug);
             }
          }
