@@ -19,7 +19,7 @@ use Math::BigFloat;
 
 my $db     = "$ENV{'HOME'}/scstats/scstats.db";
 my $geo    = "$ENV{'HOME'}/scstats/GeoLiteCity.dat";
-my $maxinc = 300; # maximum score difference between two datapoints to prevent arbitrary player scores set by some maps
+my $maxinc = 420; # maximum score difference between two datapoints to prevent arbitrary player scores set by some maps
 my $debug  = 0;   # 1 prints debug output and won't use the DB
 
 ###
@@ -63,8 +63,9 @@ unless (open my $fh, '<', $ARGV[0]) {
 } 
 else {
    while (my $in = <$fh>) {
+      chomp $in;
+      next if (length($in) < 28);
       my $line = substr($in, 0, 2).substr($in, 25);
-      chomp $line;
       say $line if($debug);
 
       if ($line =~ /^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><>" connected, address "([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}):/) {
