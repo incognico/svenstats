@@ -16,3 +16,10 @@ CREATE TABLE stats(
    datapoints    integer,
    datapointgain integer
 );
+CREATE TABLE maps(
+   map           text      primary key,
+   count         integer
+);
+CREATE TABLE misc(
+   hold          integer
+);
