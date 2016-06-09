@@ -21,9 +21,9 @@ use Math::BigFloat;
 
 my $db        = "$ENV{'HOME'}/scstats/scstats.db";
 my $geo       = "$ENV{'HOME'}/scstats/GeoLiteCity.dat";
-my $maxinc    = 420; # maximum score difference between two datapoints to prevent arbitrary player scores set by some maps
+my $maxinc    = 450; # maximum score difference between two datapoints to prevent arbitrary player scores set by some maps
 my $debug     = 0;   # 1 prints debug output and won't use the DB
-my @blacklist = qw(mmm); # map blacklist, space seperated, lowercase
+my @blacklist = qw(arcade ayakashi_banquet botrace bstore mmm mmm_v2 secretcity secretcity2 secretcity3 secretcity4beta secretcity5beta secretcity6b6 secretcitykeen_beta secretcitykeen_2_alpha); # map blacklist, space seperated, lowercase
 
 ###
 
@@ -85,22 +85,22 @@ else {
          $$maps{lc($1)}{count}++;
       }
 
-      unless ($hold) {
-         if ($line =~ /^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><>" connected, address "([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}):/) {
-            $$stats{$3}{name}  = $1;
-            $$stats{$3}{id}    = $2;
-            $$stats{$3}{ip}    = $4;
-            $$stats{$3}{joins}++;
-         }
-         elsif ($line =~ /^L ".+<[0-9]+><STEAM_(0:[01]:[0-9]+)><players>" has entered the game/) {
-            $$stats{$1}{joins}++;
-         }
-         elsif ($line =~ /^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><players>" stats: frags="(-?[0-9]+\.[0-9]{2})" deaths="([0-9]+)"/) {
-            $$stats{$3}{score}      = Math::BigFloat->bzero unless(defined $$stats{$3}{score});
-            $$stats{$3}{lastscore}  = Math::BigFloat->bzero unless(defined $$stats{$3}{lastscore});
-            $$stats{$3}{deaths}     = 0 unless(defined $$stats{$3}{deaths});
-            $$stats{$3}{lastdeaths} = 0 unless(defined $$stats{$3}{lastdeaths});
+      if ($line =~ /^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><>" connected, address "([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}):/) {
+         $$stats{$3}{name}  = $1;
+         $$stats{$3}{id}    = $2;
+         $$stats{$3}{ip}    = $4;
+         $$stats{$3}{joins}++;
+      }
+      elsif ($line =~ /^L ".+<[0-9]+><STEAM_(0:[01]:[0-9]+)><players>" has entered the game/) {
+         $$stats{$1}{joins}++;
+      }
+      elsif ($line =~ /^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><players>" stats: frags="(-?[0-9]+\.[0-9]{2})" deaths="([0-9]+)"/) {
+         $$stats{$3}{score}      = Math::BigFloat->bzero unless(defined $$stats{$3}{score});
+         $$stats{$3}{lastscore}  = Math::BigFloat->bzero unless(defined $$stats{$3}{lastscore});
+         $$stats{$3}{deaths}     = 0 unless(defined $$stats{$3}{deaths});
+         $$stats{$3}{lastdeaths} = 0 unless(defined $$stats{$3}{lastdeaths});
 
+         unless ($hold) {
             my $score     = Math::BigFloat->new($4);
             my $lastscore = $score->copy;
             my $idx       = $2.'x'.(defined $$stats{$3}{joins} ? $$stats{$3}{joins} : 1);
