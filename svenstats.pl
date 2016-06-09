@@ -100,11 +100,11 @@ else {
          $$stats{$3}{deaths}     = 0 unless(defined $$stats{$3}{deaths});
          $$stats{$3}{lastdeaths} = 0 unless(defined $$stats{$3}{lastdeaths});
 
+         my $score     = Math::BigFloat->new($4);
+         my $lastscore = $score->copy;
+         my $idx       = $2.'x'.(defined $$stats{$3}{joins} ? $$stats{$3}{joins} : 1);
+         
          unless ($hold) {
-            my $score     = Math::BigFloat->new($4);
-            my $lastscore = $score->copy;
-            my $idx       = $2.'x'.(defined $$stats{$3}{joins} ? $$stats{$3}{joins} : 1);
-
             if ($score->bacmp($$stats{$3}{lastscore})) {
                if (exists $$stats{$3}{idx} && $idx eq $$stats{$3}{idx}) {
                   my $diff = $score->bsub($$stats{$3}{lastscore});
@@ -126,14 +126,14 @@ else {
                   $$stats{$3}{deaths} += $5;
                }
             }
-
-            $$stats{$3}{name}       = $1;
-            $$stats{$3}{id}         = $2;
-            $$stats{$3}{idx}        = $idx;
-            $$stats{$3}{lastscore}  = $lastscore->copy;
-            $$stats{$3}{lastdeaths} = $5;
-            $$stats{$3}{datapoints}++;
          }
+
+         $$stats{$3}{name}       = $1;
+         $$stats{$3}{id}         = $2;
+         $$stats{$3}{idx}        = $idx;
+         $$stats{$3}{lastscore}  = $lastscore->copy;
+         $$stats{$3}{lastdeaths} = $5;
+         $$stats{$3}{datapoints}++;
       }
    }
    close $fh; 
