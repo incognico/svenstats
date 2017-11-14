@@ -12,7 +12,7 @@ use warnings;
 
 use HTML::Entities;
 
-my ($stats, @chats);
+my @chats;
 
 if (@ARGV != 1) {
    say "Usage: $0 <logfile>";
