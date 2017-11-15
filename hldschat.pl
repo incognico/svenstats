@@ -34,6 +34,6 @@ else {
    close $fh;
 }
 
-say "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Chat Log</title></head><body><code>\n";
+say "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Chat Log</title></head><body><code>";
 say "$_<br>" for (@chats);
 say "</code></body></html>";
