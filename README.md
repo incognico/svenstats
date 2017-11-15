@@ -1,5 +1,6 @@
 ## svenstats.pl for Sven Co-op servers (SvenDS)
 Log parser for Sven Co-op dedicated servers (SvenDS) logs, to gather player statistics (name, score, deaths, country, etc.).
+Bonus: hldschat.pl: Outputs the in-game chat logs in HTML format.
 
 ## Notes
 * Assumes log file rotation ~~every 24h~~ (default SvenDS log settings)
