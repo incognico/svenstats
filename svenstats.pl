@@ -23,7 +23,7 @@ my $db        = "$ENV{'HOME'}/scstats/scstats.db";
 my $geo       = "$ENV{'HOME'}/scstats/GeoLiteCity.dat";
 my $maxinc    = 420; # maximum score difference between two datapoints to prevent arbitrary player scores set by some maps
 my $debug     = 0;   # 1 prints debug output and won't use the DB
-my @blacklist = qw(arcade ayakashi_banquet botrace bstore evilmansion halloween_hospital kbd2a mmm mmm_v2 runforfreedom_alpha1 secretcity secretcity2 secretcity3 secretcity4beta secretcity5beta secretcity6b6 secretcitykeen_beta secretcitykeen_2_alpha trempler_weapons); # map blacklist, space seperated, lowercase
+my @blacklist = qw(arcade ayakashi_banquet botrace bstore evilmansion halloween_hospital kbd2a mmm mmm_v2 runforfreedom_alpha1 secretcity secretcity2 secretcity3 secretcity4beta secretcity5beta secretcity6b6 secretcitykeen_beta secretcitykeen_2_alpha skate_city trempler_weapons); # map blacklist, space seperated, lowercase
 
 ###
 
