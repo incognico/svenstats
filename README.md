@@ -15,11 +15,14 @@ Bonus: hldschat.pl: Outputs the in-game chat logs in HTML format.
   * Geo::IP (and [GeoLiteCity.dat](https://dev.maxmind.com/geoip/legacy/geolite/))
   * DBI
   * DBD::SQLite
+  * Math::BigFloat
+  * File::Slurp
+  * File::Basename
 * SQLite 3
 
 ## Get started
 1. ```sqlite3 scstats.db < schema.sqlite```
 2. Configure ```$db``` and ```$geo``` in ```svenstats.pl```
-3. Optional: Feed it with old logs (but the current one!) ```for i in /path/to/logs/excluding/the/current/one/*.log ; do svenstats.pl $i ; done``` - Be sure to feed them in the correct order, from oldest to newest (* glob in bash should take care)
+3. Optional: Feed it with once with all existing logs (but the current one!) ```for i in /path/to/logs/excluding/the/current/one/*.log ; do svenstats.pl $i ; done``` - Be sure to feed them in the correct order, from oldest to newest (* glob in bash should take care)
 4. Add a daily cronjob which feeds yesterdays closed log to ```svenstats.pl``` (example file: ```svenstats_cronjob.bash```)
 5. Do cool stuff with the gathered data, example: [twlz.lifeisabug.com](http://twlz.lifeisabug.com/)
