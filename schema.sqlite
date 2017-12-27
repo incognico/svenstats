@@ -1,6 +1,6 @@
 CREATE TABLE stats(
    steamid64     integer   primary key,
-   steamid       text,
+   steamid       text      unique,
    name          text,
    id            integer,
    score         real,
