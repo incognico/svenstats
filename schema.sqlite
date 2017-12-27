@@ -14,7 +14,8 @@ CREATE TABLE stats(
    lat           real,
    lon           real,
    datapoints    integer,
-   datapointgain integer
+   datapointgain integer,
+   seen          text
 );
 CREATE TABLE maps(
    map           text      primary key,
