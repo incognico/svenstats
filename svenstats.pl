@@ -51,12 +51,13 @@ unless ($debug) {
       say $DBI::errstr;
       exit;
    }
+   $dbh->do('PRAGMA foreign_keys = OFF');
    $dbh->do('PRAGMA journal_mode = MEMORY');
    $dbh->do('PRAGMA cache_size = -8000');
    $dbh->do('PRAGMA synchronous = OFF');
    $dbh->{AutoCommit} = 0;
 
-   $stats = $dbh->selectall_hashref('SELECT steamid, name, id, score, lastscore, deaths, lastdeaths, joins, geo, lat, lon, datapoints FROM stats', 'steamid');
+   $stats = $dbh->selectall_hashref('SELECT steamid, name, id, score, lastscore, deaths, lastdeaths, joins, geo, lat, lon, datapoints, seen FROM stats', 'steamid');
 
    for (keys %{$stats}) {
       if (defined $$stats{$_}{score}) {
@@ -152,8 +153,6 @@ unless ($debug) {
    my $sth = $dbh->prepare('REPLACE INTO stats (steamid64, steamid, name, id, score, lastscore, deaths, lastdeaths, scoregain, deathgain, joins, geo, lat, lon, datapoints, datapointgain, seen) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
 
    for (keys %{$stats}) {
-      next unless(exists $$stats{$_}{modified});
-
       my ($country, $lat, $lon);
 
       if (defined $$stats{$_}{ip}) {
@@ -178,12 +177,12 @@ unless ($debug) {
          defined $$stats{$_}{oldscore}      ? $$stats{$_}{score}->copy->bsub($$stats{$_}{oldscore}) : 0,
          defined $$stats{$_}{olddeaths}     ? $$stats{$_}{deaths}-$$stats{$_}{olddeaths}            : 0,
          defined $$stats{$_}{joins}         ? $$stats{$_}{joins}      : 1,
-         defined $country                   ? $country                : defined $$stats{$_}{geo} ? $$stats{$_}{geo} : undef,
-         defined $lat                       ? $lat                    : defined $$stats{$_}{lat} ? $$stats{$_}{lat} : undef,
-         defined $lon                       ? $lon                    : defined $$stats{$_}{lon} ? $$stats{$_}{lon} : undef,
+         defined $country                   ? $country                : defined $$stats{$_}{geo}  ? $$stats{$_}{geo}  : undef,
+         defined $lat                       ? $lat                    : defined $$stats{$_}{lat}  ? $$stats{$_}{lat}  : undef,
+         defined $lon                       ? $lon                    : defined $$stats{$_}{lon}  ? $$stats{$_}{lon}  : undef,
          defined $$stats{$_}{datapoints}    ? $$stats{$_}{datapoints} : 0,
          defined $$stats{$_}{olddatapoints} ? $$stats{$_}{datapoints}-$$stats{$_}{olddatapoints}    : 0,
-         $today
+         defined $$stats{$_}{modified}      ? $today                  : defined $$stats{$_}{seen} ? $$stats{$_}{seen} : undef
       );
    }
    $dbh->commit;
