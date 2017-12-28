@@ -98,11 +98,10 @@ while (my $in = splice(@lines, 0, 1)) {
       $$stats{$3}{id}       = $2;
       $$stats{$3}{ip}       = $4;
       $$stats{$3}{joins}    ++;
-      $$stats{$3}{modified} = 1;
    }
    elsif ($line =~ /^L ".+<[0-9]+><STEAM_(0:[01]:[0-9]+)><players>" has entered the game/) {
       $$stats{$1}{joins}++;
-      $$stats{$1}{modified} = 1;
+      $$stats{$1}{wasseen} = 1;
    }
    elsif ($line =~ /^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><players>" stats: frags="(-?[0-9]+\.[0-9]{2})" deaths="([0-9]+)"/) {
       $$stats{$3}{score}      = Math::BigFloat->bzero unless(defined $$stats{$3}{score});
@@ -144,7 +143,7 @@ while (my $in = splice(@lines, 0, 1)) {
       $$stats{$3}{lastscore}  = $lastscore->copy;
       $$stats{$3}{lastdeaths} = $5;
       $$stats{$3}{datapoints}++;
-      $$stats{$3}{modified}   = 1;
+      $$stats{$3}{wasseen}   = 1;
    }
 }
 
@@ -182,7 +181,7 @@ unless ($debug) {
          defined $lon                       ? $lon                    : defined $$stats{$_}{lon}  ? $$stats{$_}{lon}  : undef,
          defined $$stats{$_}{datapoints}    ? $$stats{$_}{datapoints} : 0,
          defined $$stats{$_}{olddatapoints} ? $$stats{$_}{datapoints}-$$stats{$_}{olddatapoints}    : 0,
-         defined $$stats{$_}{modified}      ? $today                  : defined $$stats{$_}{seen} ? $$stats{$_}{seen} : undef
+         defined $$stats{$_}{wasseen}       ? $today                  : defined $$stats{$_}{seen} ? $$stats{$_}{seen} : undef
       );
    }
    $dbh->commit;
