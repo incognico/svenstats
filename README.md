@@ -12,7 +12,7 @@ Bonus: hldschat.pl: Outputs the in-game chat logs in HTML format.
 * SvenDS log files
 * Perl >=5.16
   * Data::Dumper (for $debug = 1)
-  * Geo::IP (and [GeoLiteCity.dat](https://dev.maxmind.com/geoip/legacy/geolite/))
+  * GeoIP2 (and [GeoLite2-City.mmdb](https://dev.maxmind.com/geoip/geoip2/geolite2/))
   * DBI
   * DBD::SQLite
   * Math::BigFloat
