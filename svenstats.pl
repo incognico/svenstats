@@ -16,7 +16,7 @@ no warnings 'experimental::smartmatch';
 
 use DBI;
 use Data::Dumper;
-use GeoIP2::Database::Reader;
+use MaxMind::DB::Reader;
 use Math::BigFloat;
 use File::Slurp;
 use File::Basename;
@@ -148,19 +148,19 @@ while (my $in = splice(@lines, 0, 1)) {
 }
 
 unless ($debug) {
-   my $gi  = GeoIP2::Database::Reader->new(file => $geo);
+   my $gi  = MaxMind::DB::Reader->new(file => $geo);
    my $sth = $dbh->prepare('REPLACE INTO stats (steamid64, steamid, name, id, score, lastscore, deaths, lastdeaths, scoregain, deathgain, joins, geo, lat, lon, datapoints, datapointgain, seen) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
 
    for (keys %{$stats}) {
       my ($country, $lat, $lon);
 
       if (defined $$stats{$_}{ip}) {
-         my $record  = $gi->city(ip => $$stats{$_}{ip});
+         my $record  = $gi->record_for_address($$stats{$_}{ip});
 
          if ($record) {
-            $country = $record->country->iso_code;
-            $lat     = $record->location->latitude;
-            $lon     = $record->location->longitude;
+            $country = $record->{country}{iso_code};
+            $lat     = $record->{location}{latitude};
+            $lon     = $record->{location}{longitude};
          }
       }
 
