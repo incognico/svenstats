@@ -16,7 +16,7 @@ no warnings 'experimental::smartmatch';
 
 use DBI;
 use Data::Dumper;
-use Geo::IP;
+use MaxMind::DB::Reader;
 use Math::BigFloat;
 use File::Slurp;
 use File::Basename;
@@ -24,7 +24,7 @@ use File::Basename;
 ### config
 
 my $db        = "$ENV{'HOME'}/scstats/scstats.db";
-my $geo       = "$ENV{'HOME'}/scstats/GeoLiteCity.dat";
+my $geo       = "$ENV{'HOME'}/scstats/GeoLite2-City.mmdb";
 my $maxinc    = 450; # maximum score difference between two datapoints to prevent arbitrary player scores set by some maps
 my $debug     = 0;   # 1 prints debug output and won't use the DB
 my @blacklist = qw(arcade ayakashi_banquet blackmesa_spacebasement botrace bstore evilmansion halloween_hospital kbd2a mmm mmm_v2 runforfreedom_alpha1 secretcity secretcity2 secretcity3 secretcity4beta secretcity5beta secretcity6b6 secretcitykeen_beta secretcitykeen_2_alpha skate_city trempler_weapons); # map blacklist, space seperated, lowercase
@@ -148,19 +148,19 @@ while (my $in = splice(@lines, 0, 1)) {
 }
 
 unless ($debug) {
-   my $gi  = Geo::IP->open($geo, GEOIP_MEMORY_CACHE);
+   my $gi  = MaxMind::DB::Reader->new(file => $geo);
    my $sth = $dbh->prepare('REPLACE INTO stats (steamid64, steamid, name, id, score, lastscore, deaths, lastdeaths, scoregain, deathgain, joins, geo, lat, lon, datapoints, datapointgain, seen) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
 
    for (keys %{$stats}) {
       my ($country, $lat, $lon);
 
       if (defined $$stats{$_}{ip}) {
-         my $record  = $gi->record_by_addr($$stats{$_}{ip});
+         my $record  = $gi->record_for_address($$stats{$_}{ip});
 
          if ($record) {
-            $country = $record->country_code;
-            $lat     = $record->latitude;
-            $lon     = $record->longitude;
+            $country = $record->{country}{iso_code};
+            $lat     = $record->{location}{latitude};
+            $lon     = $record->{location}{longitude};
          }
       }
 
