@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-# Sven Co-op (svends) log parser "svenstats_oneshot.pl"
+# Sven Co-op (svends) log parser "svenstats_oneshot.pl - Top players -> discord webhook"
 #
 # Copyright 2016-2019, Nico R. Wohlgemuth <nico@lifeisabug.com>
 
@@ -14,17 +14,36 @@ use autodie;
 
 no warnings 'experimental::smartmatch';
 
-use Data::Dumper;
 use MaxMind::DB::Reader;
 use Math::BigFloat;
 use File::Slurp;
 use File::Basename;
+use LWP::UserAgent;
+use JSON;
 
 ### config
 
 my $geo = '/usr/share/GeoIP/GeoLite2-City.mmdb';
+my $url = '';
+my $inline = \0; # \0 or \1
+my $num = 25;
 
 ###
+
+sub duration {
+   my $sec = shift;
+
+   return '?' unless ($sec);
+
+   my @gmt = gmtime($sec);
+
+   $gmt[5] -= 70;
+   return   ($gmt[5] ?                                                       $gmt[5].'y' : '').
+            ($gmt[7] ? ($gmt[5]                                  ? ' ' : '').$gmt[7].'d' : '').
+            ($gmt[2] ? ($gmt[5] || $gmt[7]                       ? ' ' : '').$gmt[2].'h' : '').
+            ($gmt[1] ? ($gmt[5] || $gmt[7] || $gmt[2]            ? ' ' : '').$gmt[1].'m' : '');
+#            ($gmt[0] ? ($gmt[5] || $gmt[7] || $gmt[2] || $gmt[1] ? ' ' : '').$gmt[0].'s' : '');
+}
 
 my ($dbh, $stats, $maps);
 
@@ -94,6 +113,22 @@ while (my $in = splice(@lines, 0, 1)) {
    }
 }
 
+my $r = HTTP::Request->new( 'POST', $url );
+$r->content_type( 'application/json' );
+
+my $msg = {
+   'content' => '',
+   'embeds' => [
+      {
+         'title' => ":trophy: Top $num players in the last 24h",
+         'color' => '15844367',
+         'footer' => {
+            'text' => $today,
+         },
+      },
+   ],
+};
+
 my $gi = MaxMind::DB::Reader->new(file => $geo);
 my $c = 1;
 
@@ -108,14 +143,16 @@ foreach my $key (sort { $$stats{$b}{datapoints} <=> $$stats{$a}{datapoints} } ke
       }
    }
 
-   printf("%s %s %s %s %s\n",
-      defined $$stats{$key}{score}      ? $$stats{$key}{score}      : 0,
-      defined $$stats{$key}{deaths}     ? $$stats{$key}{deaths}     : 0,
-      defined $$stats{$key}{datapoints} ? $$stats{$key}{datapoints} : 0,
-      defined $country                  ? $country                  : defined $$stats{$key}{geo}  ? $$stats{$key}{geo}  : 'white',
-      defined $$stats{$key}{name}       ? $$stats{$key}{name}       : '?',
-   ) if ($$stats{$key}{datapoints} > 30);
+   if ($$stats{$key}{datapoints} > 30) {
+      push @{$$msg{'embeds'}[0]{'fields'}}, { 'name' => sprintf(":flag_%s: %s", defined $country ? $country : 'white', $$stats{$key}{name}), 'value' => sprintf("#**%s**  Playtime: **%s** Score: **%s** Deaths: **%s**", $c, duration($$stats{$key}{datapoints}*30), int($$stats{$key}{score}), $$stats{$key}{deaths}), 'inline' => $inline, };
+   }
 
    $c++;
-   last if ($c > 25);
+   last if ($c > $num);
 }
+
+$r->content( encode_json( $msg ) );
+
+my $ua = LWP::UserAgent->new;
+$ua->agent( 'Mozilla/5.0' );
+$ua->request( $r );
