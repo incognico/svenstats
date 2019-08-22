@@ -20,6 +20,7 @@ use File::Slurp;
 use File::Basename;
 use LWP::UserAgent;
 use JSON;
+use Encode;
 
 ### config
 
@@ -144,7 +145,7 @@ foreach my $key (sort { $$stats{$b}{datapoints} <=> $$stats{$a}{datapoints} } ke
    }
 
    if ($$stats{$key}{datapoints} > 30) {
-      push @{$$msg{'embeds'}[0]{'fields'}}, { 'name' => sprintf(":flag_%s: %s", defined $country ? $country : 'white', $$stats{$key}{name}), 'value' => sprintf("#**%s**  Playtime: **%s** Score: **%s** Deaths: **%s**", $c, duration($$stats{$key}{datapoints}*30), int($$stats{$key}{score}), $$stats{$key}{deaths}), 'inline' => $inline, };
+      push @{$$msg{'embeds'}[0]{'fields'}}, { 'name' => sprintf(":flag_%s: %s", defined $country ? $country : 'white', Encode::decode_utf8($$stats{$key}{name})), 'value' => sprintf("#**%s**  Playtime: **%s** Score: **%s** Deaths: **%s**", $c, duration($$stats{$key}{datapoints}*30), int($$stats{$key}{score}), $$stats{$key}{deaths}), 'inline' => $inline, };
    }
 
    $c++;
