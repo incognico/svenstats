@@ -28,6 +28,7 @@ my $geo = '/usr/share/GeoIP/GeoLite2-City.mmdb';
 my $url = '';
 my $inline = \0; # \0 or \1
 my $num = 25;
+my @colors = qw(1752220 3066993 3447003 10181046 15844367 15105570 15158332 9807270 8359053 3426654 1146986 2067276 2123412 7419530 12745742 11027200 10038562 9936031 12370112 2899536);
 
 ###
 
@@ -46,7 +47,7 @@ sub duration {
 #            ($gmt[0] ? ($gmt[5] || $gmt[7] || $gmt[2] || $gmt[1] ? ' ' : '').$gmt[0].'s' : '');
 }
 
-my ($dbh, $stats, $maps);
+my $stats;
 
 if (@ARGV != 1) {
    say "Usage: $0 <logfile>";
@@ -63,7 +64,7 @@ my @lines = read_file( $ARGV[0], binmode => ':raw', chomp => 1 ) ;
 while (my $in = splice(@lines, 0, 1)) {
    next if (length($in) < 28);
 
-   my $line = substr($in, 0, 2).substr($in, 25);
+   my $line = Encode::decode_utf8(substr($in, 0, 2).substr($in, 25));
 
    if ($line =~ /^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><>" connected, address "([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}):/) {
       $$stats{$3}{name} = $1;
@@ -114,44 +115,46 @@ while (my $in = splice(@lines, 0, 1)) {
    }
 }
 
-my $r = HTTP::Request->new( 'POST', $url );
-$r->content_type( 'application/json' );
+my $gi = MaxMind::DB::Reader->new(file => $geo);
+my $uniq = keys %{$stats};
+my $c = 0;
 
 my $msg = {
    'content' => '',
    'embeds' => [
       {
-         'title' => ":trophy: Top $num players in the last 24h",
-         'color' => '15844367',
+         'color' => $colors[rand @colors],
          'footer' => {
-            'text' => $today,
+            'text' => "$today - Unique players: $uniq",
          },
       },
    ],
 };
 
-my $gi = MaxMind::DB::Reader->new(file => $geo);
-my $c = 1;
-
 foreach my $key (sort { $$stats{$b}{datapoints} <=> $$stats{$a}{datapoints} } keys %{$stats}) {
    my ($country, $lat, $lon);
 
-   if (defined $$stats{$key}{ip}) {
-      my $record  = $gi->record_for_address($$stats{$key}{ip});
+   if ($$stats{$key}{datapoints} > 10) {
+      if (defined $$stats{$key}{ip}) {
+         my $record  = $gi->record_for_address($$stats{$key}{ip});
 
-      if ($record) {
-         $country = lc($record->{country}{iso_code});
+         if ($record) {
+            $country = lc($record->{country}{iso_code});
+         }
       }
-   }
 
-   if ($$stats{$key}{datapoints} > 30) {
-      push @{$$msg{'embeds'}[0]{'fields'}}, { 'name' => sprintf(":flag_%s: %s", defined $country ? $country : 'white', Encode::decode_utf8($$stats{$key}{name})), 'value' => sprintf("#**%s**  Playtime: **%s** Score: **%s** Deaths: **%s**", $c, duration($$stats{$key}{datapoints}*30), int($$stats{$key}{score}), $$stats{$key}{deaths}), 'inline' => $inline, };
+      push @{$$msg{'embeds'}[0]{'fields'}}, { 'name' => sprintf(":flag_%s: %s", defined $country ? $country : 'white', $$stats{$key}{name}), 'value' => sprintf("#**%s**  Playtime: **%s** Score: **%s** Deaths: **%s**", $c+1, duration($$stats{$key}{datapoints}*30), int($$stats{$key}{score}), $$stats{$key}{deaths}), 'inline' => $inline };
    }
 
    $c++;
-   last if ($c > $num);
+   last if ($c >= $num);
 }
 
+my $rc = @{$$msg{'embeds'}[0]{'fields'}};
+$$msg{'embeds'}[0]{'title'} = ":trophy: Top $rc players in the last 24h";
+
+my $r = HTTP::Request->new( 'POST', $url );
+$r->content_type( 'application/json' );
 $r->content( encode_json( $msg ) );
 
 my $ua = LWP::UserAgent->new;
