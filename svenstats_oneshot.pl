@@ -29,6 +29,7 @@ my $url = '';
 my $inline = \0; # \0 or \1
 my $num = 25;
 my @colors = qw(1752220 3066993 3447003 10181046 15844367 15105570 15158332 9807270 8359053 3426654 1146986 2067276 2123412 7419530 12745742 11027200 10038562 9936031 12370112 2899536);
+my $discord_markdown_pattern = qr/(?<!\\)(`|@|:|#|\||__|\*|~|>)/;
 
 ###
 
@@ -141,9 +142,11 @@ foreach my $key (sort { $$stats{$b}{datapoints} <=> $$stats{$a}{datapoints} } ke
          if ($record) {
             $country = lc($record->{country}{iso_code});
          }
-      }
 
-      push @{$$msg{'embeds'}[0]{'fields'}}, { 'name' => sprintf(":flag_%s: %s", defined $country ? $country : 'white', $$stats{$key}{name}), 'value' => sprintf("#**%s**  Playtime: **%s** Score: **%s** Deaths: **%s**", $c+1, duration($$stats{$key}{datapoints}*30), int($$stats{$key}{score}), $$stats{$key}{deaths}), 'inline' => $inline };
+         $$stats{$key}{name} =~ s/$discord_markdown_pattern/\\$1/g;
+
+         push @{$$msg{'embeds'}[0]{'fields'}}, { 'name' => sprintf(":flag_%s: %s", defined $country ? $country : 'white', $$stats{$key}{name}), 'value' => sprintf("#**%s**  Playtime: **%s** Score: **%s** Deaths: **%s**", $c+1, duration($$stats{$key}{datapoints}*30), int($$stats{$key}{score}), $$stats{$key}{deaths}), 'inline' => $inline };
+      }
    }
 
    $c++;
