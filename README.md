@@ -23,7 +23,7 @@ Log parser for Sven Co-op dedicated servers (SvenDS) logs, to gather player stat
 ## Get started
 1. `sqlite3 scstats.db < schema.sqlite`
 2. Configure `$db` and `$geo` in `svenstats.pl`
-3. Optional: Feed it with once with all existing logs (but the current one!) `for i in /path/to/logs/excluding/the/current/one/*.log ; do svenstats.pl $i ; done` - Be sure to feed them in the correct order, from oldest to newest (* glob in bash should take care)
+3. Optional: Feed it with once with all existing logs (but the current one!) `for i in /path/to/logs/excluding/the/current/one/*.log ; do svenstats.pl $i ; done` - Be sure to feed them in the correct order, from oldest to newest (\* glob in bash should take care)
 4. Add a daily cronjob which feeds yesterdays closed log to `svenstats.pl` (example file: `svenstats_cronjob.bash`)
 5. Do cool stuff with the gathered data
 
@@ -44,7 +44,8 @@ Same principle as `svenstats.pl` but without a database and thus only for one lo
 
 ## Get started
 1. Configure the Discord webhook URL: `$url` in `svenstats_oneshot.pl` 
-2. Add a daily cronjob which feeds yesterdays closed log to `svenstats_oneshot.pl` (example file: `svenstats_cronjob.bash`)
+2. Optionally set `$steam` to `1` and set `$steamkey` to your Steam API key if you want to use the Steam API 
+3. Add a daily cronjob which feeds yesterdays closed log to `svenstats_oneshot.pl` (example file: `svenstats_cronjob.bash`)
 
 # `hldschat.pl`
 Outputs the in-game chat logs in simple HTML format. Without a database and thus only for one log file at a time.
