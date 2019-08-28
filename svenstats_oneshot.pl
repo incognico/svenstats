@@ -54,7 +54,7 @@ while (my $in = splice(@lines, 0, 1)) {
    my $line = Encode::decode_utf8(substr($in, 0, 2).substr($in, 25));
 
    if ($line =~ /^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><>" connected, address "([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}):/) {
-      $$stats{$3}{name} = discord($1);
+      $$stats{$3}{name} = $1;
       $$stats{$3}{id}   = $2;
       $$stats{$3}{ip}   = $4;
       $$stats{$3}{joins}++;
@@ -125,7 +125,7 @@ foreach my $key (sort { $$stats{$b}{datapoints} <=> $$stats{$a}{datapoints} } ke
          my $record  = $gi->record_for_address($$stats{$key}{ip});
          $country = lc($record->{country}{iso_code}) if($record);
 
-         push @{$$msg{'embeds'}[0]{'fields'}}, { 'name' => sprintf(":flag_%s: %s", defined $country ? $country : 'white', $$stats{$key}{name}), 'value' => sprintf("#**%s** Playtime: **%s** Score: **%s** Deaths: **%s**", $c+1, duration($$stats{$key}{datapoints}*30), int($$stats{$key}{score}), $$stats{$key}{deaths}), 'inline' => \$inline, 'steamid64' => idto64($key) };
+         push @{$$msg{'embeds'}[0]{'fields'}}, { 'name' => sprintf(":flag_%s: %s", defined $country ? $country : 'white', discord($$stats{$key}{name})), 'value' => sprintf("#**%s** Playtime: **%s** Score: **%s** Deaths: **%s**", $c+1, duration($$stats{$key}{datapoints}*30), int($$stats{$key}{score}), $$stats{$key}{deaths}), 'inline' => \$inline, 'steamid64' => idto64($key) };
       }
    }
 
