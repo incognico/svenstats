@@ -20,8 +20,8 @@ statslogpath="/home/svends/scstats/logs"
 #chatlogpath="/home/srcds/sc5/svencoop_addon/chatlogs"
 
 mv "${svenlogpath}/${yesterday}.log" "${statslogpath}/${yesterday}.log"
-$svenstats "${statslogpath}/${yesterday}.log"
 $svenstatsos "${statslogpath}/${yesterday}.log"
+$svenstats "${statslogpath}/${yesterday}.log"
 #$hldschat "${statslogpath}/${yesterday}.log" >> "${chatlogpath}/${yesterday}.html"
 
 gzip "${statslogpath}/${yesterday}.log"
