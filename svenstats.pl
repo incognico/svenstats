@@ -2,7 +2,7 @@
 
 # Sven Co-op (svends) log parser "svenstats.pl"
 #
-# Copyright 2016-2017, Nico R. Wohlgemuth <nico@lifeisabug.com>
+# Copyright 2016-2019, Nico R. Wohlgemuth <nico@lifeisabug.com>
 
 use 5.16.0;
 
@@ -27,7 +27,7 @@ my $db        = "$ENV{'HOME'}/scstats/scstats.db";
 my $geo       = "$ENV{'HOME'}/scstats/GeoLite2-City.mmdb";
 my $maxinc    = 450; # maximum score difference between two datapoints to prevent arbitrary player scores set by some maps
 my $debug     = 0;   # 1 prints debug output and won't use the DB
-my @blacklist = qw(arcade ayakashi_banquet blackmesa_spacebasement botrace bstore evilmansion halloween_hospital kbd2a mmm mmm_v2 runforfreedom_alpha1 secretcity secretcity2 secretcity3 secretcity4beta secretcity5beta secretcity6b6 secretcitykeen_beta secretcitykeen_2_alpha skate_city trempler_weapons); # map blacklist, space seperated, lowercase
+my @blacklist = qw(ayakashi_banquet blackmesa_spacebasement bstore kbd2a runforfreedom_alpha1 skate_city trempler_weapons); # map blacklist, space seperated, lowercase
 
 ###
 
@@ -57,7 +57,25 @@ unless ($debug) {
    $dbh->do('PRAGMA synchronous = OFF');
    $dbh->{AutoCommit} = 0;
 
-   $stats = $dbh->selectall_hashref('SELECT steamid, name, id, score, lastscore, deaths, lastdeaths, joins, geo, lat, lon, datapoints, seen FROM stats', 'steamid');
+   my %ids;
+
+   my $re = qr'^L ".+<[0-9]+><STEAM_(0:[01]:[0-9]+)><';
+
+   for my $in (@lines) {
+      next if (length($in) < 28);
+
+      my $line = substr($in, 0, 2).substr($in, 25);
+
+      $ids{idto64($1)}++ if ($line =~ $re);
+   }
+
+   my $where;
+   $where .= 'steamid64 = ' . $_ . ' or ' foreach (keys %ids);
+   $where = substr($where, 0, -3) if($where);
+
+   undef %ids;
+
+   $stats = $dbh->selectall_hashref('SELECT steamid, name, id, score, lastscore, deaths, lastdeaths, joins, geo, lat, lon, datapoints, seen FROM stats' . ($where ? ' WHERE '.$where : ''), 'steamid');
 
    for (keys %{$stats}) {
       if (defined $$stats{$_}{score}) {
@@ -76,7 +94,11 @@ unless ($debug) {
    $hold = $$res{hold} if(defined $$res{hold});
 }
 
-while (my $in = splice(@lines, 0, 1)) {
+my $addr_re = qr'^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><>" connected, address "([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}):';
+my $entr_re = qr'^L ".+<[0-9]+><STEAM_(0:[01]:[0-9]+)><players>" has entered the game';
+my $stat_re = qr'^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><players>" stats: frags="(-?[0-9]+\.[0-9]{2})" deaths="([0-9]+)"';
+
+while (my $in = shift(@lines)) {
    next if (length($in) < 28);
 
    my $line = substr($in, 0, 2).substr($in, 25);
@@ -93,17 +115,17 @@ while (my $in = splice(@lines, 0, 1)) {
       $$maps{lc($1)}{count}++;
    }
 
-   if ($line =~ /^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><>" connected, address "([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}):/) {
-      $$stats{$3}{name}     = $1;
-      $$stats{$3}{id}       = $2;
-      $$stats{$3}{ip}       = $4;
-      $$stats{$3}{joins}    ++;
+   if ($line =~ $addr_re) {
+      $$stats{$3}{name} = $1;
+      $$stats{$3}{id}   = $2;
+      $$stats{$3}{ip}   = $4;
+      $$stats{$3}{joins}++;
    }
-   elsif ($line =~ /^L ".+<[0-9]+><STEAM_(0:[01]:[0-9]+)><players>" has entered the game/) {
+   elsif ($line =~ $entr_re) {
       $$stats{$1}{joins}++;
       $$stats{$1}{wasseen} = 1;
    }
-   elsif ($line =~ /^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><players>" stats: frags="(-?[0-9]+\.[0-9]{2})" deaths="([0-9]+)"/) {
+   elsif ($line =~ $stat_re) {
       $$stats{$3}{score}      = Math::BigFloat->bzero unless(defined $$stats{$3}{score});
       $$stats{$3}{lastscore}  = Math::BigFloat->bzero unless(defined $$stats{$3}{lastscore});
       $$stats{$3}{deaths}     = 0 unless(defined $$stats{$3}{deaths});
@@ -143,7 +165,7 @@ while (my $in = splice(@lines, 0, 1)) {
       $$stats{$3}{lastscore}  = $lastscore->copy;
       $$stats{$3}{lastdeaths} = $5;
       $$stats{$3}{datapoints}++;
-      $$stats{$3}{wasseen}   = 1;
+      $$stats{$3}{wasseen}    = 1;
    }
 }
 
