@@ -192,10 +192,6 @@ for (keys %{$stats}) {
 }
 $dbh->commit;
 
-$sth = $dbh->prepare('UPDATE stats SET lastscore = 0, lastdeaths = 0, scoregain = 0, deathgain = 0, datapointgain = 0 WHERE seen != ?');
-$sth->execute($today);
-$dbh->commit;
-
 $sth = $dbh->prepare('REPLACE INTO maps (map, count) VALUES (?,?)');
 
 for (keys %{$maps}) {
