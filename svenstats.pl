@@ -2,7 +2,7 @@
 
 # Sven Co-op (svends) log parser "svenstats.pl"
 #
-# Copyright 2016-2019, Nico R. Wohlgemuth <nico@lifeisabug.com>
+# Copyright 2016-2020, Nico R. Wohlgemuth <nico@lifeisabug.com>
 
 use 5.16.0;
 
@@ -55,9 +55,7 @@ $dbh->do('PRAGMA cache_size = -8000');
 $dbh->do('PRAGMA synchronous = OFF');
 $dbh->{AutoCommit} = 0;
 
-my %ids;
 my @lines2;
-my $re = qr'^L ".+<[0-9]+><STEAM_(0:[01]:[0-9]+)><';
 
 while (my $in = shift(@lines)) {
    next if (length($in) < 28);
@@ -65,17 +63,11 @@ while (my $in = shift(@lines)) {
    my $line = substr($in, 0, 2).substr($in, 25);
 
    push(@lines2, $line);
-
-   $ids{idto64($1)}++ if ($line =~ $re);
 }
 
-my $where;
-$where .= 'steamid64 = ' . $_ . ' or ' foreach (keys %ids);
-$where = substr($where, 0, -3) if($where);
+undef @lines;
 
-undef %ids;
-
-$stats = $dbh->selectall_hashref('SELECT steamid, name, id, score, lastscore, deaths, lastdeaths, joins, geo, lat, lon, datapoints, seen FROM stats' . ($where ? ' WHERE '.$where : ''), 'steamid');
+$stats = $dbh->selectall_hashref('SELECT steamid, name, id, score, lastscore, deaths, lastdeaths, joins, geo, lat, lon, datapoints, seen FROM stats', 'steamid');
 
 for (keys %{$stats}) {
    if (defined $$stats{$_}{score}) {
