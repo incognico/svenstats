@@ -49,13 +49,14 @@ unless ($dbh = DBI->connect("DBI:SQLite:dbname=$db", '', '', {AutoCommit => 1}))
    say $DBI::errstr;
    exit;
 }
-$dbh->do('PRAGMA foreign_keys = OFF');
-$dbh->do('PRAGMA journal_mode = OFF');
-$dbh->do('PRAGMA cache_size = -8000');
+$dbh->do('PRAGMA journal_mode = MEMORY');
+$dbh->do('PRAGMA cache_size = -2000');
 $dbh->do('PRAGMA synchronous = OFF');
 $dbh->{AutoCommit} = 0;
 
+my %ids;
 my @lines2;
+my $re = qr'^L ".+<[0-9]+><STEAM_(0:[01]:[0-9]+)><';
 
 while (my $in = shift(@lines)) {
    next if (length($in) < 28);
@@ -63,11 +64,21 @@ while (my $in = shift(@lines)) {
    my $line = substr($in, 0, 2).substr($in, 25);
 
    push(@lines2, $line);
+
+   $ids{idto64($1)}++ if ($line =~ $re);
 }
 
-undef @lines;
+exit unless (keys %ids > 0);
 
-$stats = $dbh->selectall_hashref('SELECT steamid, name, id, score, lastscore, deaths, lastdeaths, joins, geo, lat, lon, datapoints, seen FROM stats', 'steamid');
+my $where = 'steamid64 IN (';
+$where .= $_ . ',' foreach (keys %ids);
+$where = substr($where, 0, -1) . ')';
+
+undef %ids;
+
+$stats = $dbh->selectall_hashref('SELECT steamid, name, id, score, lastscore, deaths, lastdeaths, joins, geo, lat, lon, datapoints, seen FROM stats WHERE ' . $where, 'steamid');
+
+Math::BigFloat->accuracy(2);
 
 for (keys %{$stats}) {
    if (defined $$stats{$_}{score}) {
@@ -192,6 +203,10 @@ for (keys %{$stats}) {
 }
 $dbh->commit;
 
+$sth = $dbh->prepare('UPDATE stats SET lastscore = 0, lastdeaths = 0, scoregain = 0, deathgain = 0, datapointgain = 0 WHERE seen != ?');
+$sth->execute($today);
+$dbh->commit;
+
 $sth = $dbh->prepare('REPLACE INTO maps (map, count) VALUES (?,?)');
 
 for (keys %{$maps}) {
@@ -205,7 +220,7 @@ $dbh->commit;
 
 $dbh->{AutoCommit} = 1;
 $dbh->do('PRAGMA optimize');
-$dbh->do('VACUUM');
+$dbh->do('VACUUM') if ($today =~ /20[0-9]{2}-[0-9]{2}-01/);
 
 $dbh->disconnect;
 
