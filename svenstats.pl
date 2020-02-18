@@ -15,7 +15,6 @@ use autodie;
 no warnings 'experimental::smartmatch';
 
 use DBI;
-use Data::Dumper;
 use MaxMind::DB::Reader;
 use File::Slurp;
 use File::Basename;
