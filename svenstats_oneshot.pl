@@ -2,7 +2,7 @@
 
 # Sven Co-op (svends) log parser "svenstats_oneshot.pl - Top players -> discord webhook"
 #
-# Copyright 2016-2019, Nico R. Wohlgemuth <nico@lifeisabug.com>
+# Copyright 2016-2020, Nico R. Wohlgemuth <nico@lifeisabug.com>
 
 use 5.16.0;
 
@@ -15,7 +15,6 @@ use autodie;
 no warnings 'experimental::smartmatch';
 
 use MaxMind::DB::Reader;
-use Math::BigFloat;
 use File::Slurp;
 use File::Basename;
 use LWP::UserAgent;
@@ -24,14 +23,15 @@ use Encode;
 
 ### config
 
-my $url = '';
-my $num = 25;
-my $inline = 0;
-my $steam = 0;
+my $maxinc   = 65534; # maximum score difference between two datapoints to prevent arbitrary player scores set by some maps
+my $url      = '';
+my $num      = 25;
+my $inline   = 0;
+my $steam    = 0;
 my $steamkey = '';
-my $geo = '/home/svends/gus/GeoLite2-City.mmdb';
+my $geo      = "$ENV{'HOME'}/gus/GeoLite2-City.mmdb";
 my $discord_markdown_pattern = qr/(?<!\\)(`|@|:|#|\||__|\*|~|>)/;
-my @colors = qw(1752220 3066993 3447003 10181046 15844367 15105570 15158332 9807270 8359053 3426654 1146986 2067276 2123412 7419530 12745742 11027200 10038562 9936031 12370112 2899536);
+my @colors   = qw(1752220 3066993 3447003 10181046 15844367 15105570 15158332 9807270 8359053 3426654 1146986 2067276 2123412 7419530 12745742 11027200 10038562 9936031 12370112 2899536);
 
 ###
 
@@ -64,22 +64,21 @@ while (my $in = splice(@lines, 0, 1)) {
       $$stats{$1}{joins}++;
    }
    elsif ($line =~ /^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><players>" stats: frags="(-?[0-9]+\.[0-9]{2})" deaths="([0-9]+)"/) {
-      $$stats{$3}{score}      = Math::BigFloat->bzero unless(defined $$stats{$3}{score});
-      $$stats{$3}{lastscore}  = Math::BigFloat->bzero unless(defined $$stats{$3}{lastscore});
+      $$stats{$3}{score}      = 0 unless(defined $$stats{$3}{score});
+      $$stats{$3}{lastscore}  = 0 unless(defined $$stats{$3}{lastscore});
       $$stats{$3}{deaths}     = 0 unless(defined $$stats{$3}{deaths});
       $$stats{$3}{lastdeaths} = 0 unless(defined $$stats{$3}{lastdeaths});
 
-      my $score     = Math::BigFloat->new($4);
-      my $lastscore = $score->copy;
-      my $idx       = $2.'x'.(defined $$stats{$3}{joins} ? $$stats{$3}{joins} : 1);
+      my $score = $4;
+      my $idx   = $2.'x'.(defined $$stats{$3}{joins} ? $$stats{$3}{joins} : 1);
       
-      if ($score->bacmp($$stats{$3}{lastscore})) {
+      if (abs($score) <=> abs($$stats{$3}{lastscore})) {
          if (exists $$stats{$3}{idx} && $idx eq $$stats{$3}{idx}) {
-            my $diff = $score->bsub($$stats{$3}{lastscore});
-            $$stats{$3}{score}->badd($diff);
+            my $diff = $score - $$stats{$3}{lastscore};
+            $$stats{$3}{score} += $diff unless(abs($diff) > $maxinc);
          }
          else {
-            $$stats{$3}{score}->badd($score);
+            $$stats{$3}{score} += $score unless(abs($score) > $maxinc);
          }
       }
 
@@ -96,7 +95,7 @@ while (my $in = splice(@lines, 0, 1)) {
       $$stats{$3}{name}       = $1;
       $$stats{$3}{id}         = $2;
       $$stats{$3}{idx}        = $idx;
-      $$stats{$3}{lastscore}  = $lastscore->copy;
+      $$stats{$3}{lastscore}  = $4;
       $$stats{$3}{lastdeaths} = $5;
       $$stats{$3}{datapoints}++;
    }

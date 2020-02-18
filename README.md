@@ -10,12 +10,10 @@ Log parser for Sven Co-op dedicated servers (SvenDS) logs, to gather player stat
 ## Requirements
 * SvenDS log files
 * Perl >=5.16
-  * Data::Dumper (for $debug = 1)
   * MaxMind::DB::Reader (and [GeoLite2-City.mmdb](https://dev.maxmind.com/geoip/geoip2/geolite2/))
   * MaxMind::DB::Reader::XS (optional but much faster, requires [libmaxminddb](http://maxmind.github.io/libmaxminddb/))
   * DBI
   * DBD::SQLite
-  * Math::BigFloat
   * File::Slurp
   * File::Basename
 * SQLite 3
@@ -36,7 +34,6 @@ Same principle as `svenstats.pl` but without a database and thus only for one lo
 * Perl >=5.16
   * MaxMind::DB::Reader (and [GeoLite2-City.mmdb](https://dev.maxmind.com/geoip/geoip2/geolite2/))
   * MaxMind::DB::Reader::XS (optional but much faster, requires [libmaxminddb](http://maxmind.github.io/libmaxminddb/))
-  * Math::BigFloat
   * File::Slurp
   * File::Basename
   * LWP::UserAgent

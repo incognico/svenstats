@@ -17,7 +17,6 @@ no warnings 'experimental::smartmatch';
 use DBI;
 use Data::Dumper;
 use MaxMind::DB::Reader;
-use Math::BigFloat;
 use File::Slurp;
 use File::Basename;
 
@@ -49,8 +48,8 @@ unless ($dbh = DBI->connect("DBI:SQLite:dbname=$db", '', '', {AutoCommit => 1}))
    say $DBI::errstr;
    exit;
 }
-$dbh->do('PRAGMA journal_mode = MEMORY');
 $dbh->do('PRAGMA cache_size = -2000');
+$dbh->do('PRAGMA journal_mode = MEMORY');
 $dbh->do('PRAGMA synchronous = OFF');
 $dbh->{AutoCommit} = 0;
 
@@ -74,21 +73,14 @@ my $where = 'steamid64 IN (';
 $where .= $_ . ',' foreach (keys %ids);
 $where = substr($where, 0, -1) . ')';
 
-undef %ids;
-
 $stats = $dbh->selectall_hashref('SELECT steamid, name, id, score, lastscore, deaths, lastdeaths, joins, geo, lat, lon, datapoints, seen FROM stats WHERE ' . $where, 'steamid');
 
-Math::BigFloat->accuracy(2);
-
 for (keys %{$stats}) {
-   if (defined $$stats{$_}{score}) {
-      $$stats{$_}{score}    = Math::BigFloat->new($$stats{$_}{score});
-      $$stats{$_}{oldscore} = $$stats{$_}{score}->copy;
-   }
-   $$stats{$_}{olddeaths}     = $$stats{$_}{deaths}                         if(defined $$stats{$_}{deaths});
-   $$stats{$_}{olddatapoints} = $$stats{$_}{datapoints}                     if(defined $$stats{$_}{datapoints});
-   $$stats{$_}{lastscore}     = Math::BigFloat->new($$stats{$_}{lastscore}) if(defined $$stats{$_}{lastscore});
-   $$stats{$_}{idx}           = $$stats{$_}{id}.'x'.$$stats{$_}{joins}      if(defined $$stats{$_}{id} && defined $$stats{$_}{joins});
+   $$stats{$_}{oldscore}      = $$stats{$_}{score}                     if(defined $$stats{$_}{score});
+   $$stats{$_}{olddeaths}     = $$stats{$_}{deaths}                    if(defined $$stats{$_}{deaths});
+   $$stats{$_}{olddatapoints} = $$stats{$_}{datapoints}                if(defined $$stats{$_}{datapoints});
+   $$stats{$_}{lastscore}     = $$stats{$_}{lastscore}                 if(defined $$stats{$_}{lastscore});
+   $$stats{$_}{idx}           = $$stats{$_}{id}.'x'.$$stats{$_}{joins} if(defined $$stats{$_}{id} && defined $$stats{$_}{joins});
 }
 
 $maps = $dbh->selectall_hashref('SELECT map, count FROM maps', 'map');
@@ -124,23 +116,22 @@ while (my $line = shift(@lines2)) {
       $$stats{$1}{wasseen} = 1;
    }
    elsif ($line =~ $stat_re) {
-      $$stats{$3}{score}      = Math::BigFloat->bzero unless(defined $$stats{$3}{score});
-      $$stats{$3}{lastscore}  = Math::BigFloat->bzero unless(defined $$stats{$3}{lastscore});
+      $$stats{$3}{score}      = 0 unless(defined $$stats{$3}{score});
+      $$stats{$3}{lastscore}  = 0 unless(defined $$stats{$3}{lastscore});
       $$stats{$3}{deaths}     = 0 unless(defined $$stats{$3}{deaths});
       $$stats{$3}{lastdeaths} = 0 unless(defined $$stats{$3}{lastdeaths});
 
-      my $score     = Math::BigFloat->new($4);
-      my $lastscore = $score->copy;
-      my $idx       = $2.'x'.(defined $$stats{$3}{joins} ? $$stats{$3}{joins} : 1);
+      my $score = $4;
+      my $idx   = $2.'x'.(defined $$stats{$3}{joins} ? $$stats{$3}{joins} : 1);
       
       unless ($hold) {
-         if ($score->bacmp($$stats{$3}{lastscore})) {
+         if (abs($score) <=> abs($$stats{$3}{lastscore})) {
             if (exists $$stats{$3}{idx} && $idx eq $$stats{$3}{idx}) {
-               my $diff = $score->bsub($$stats{$3}{lastscore});
-               $$stats{$3}{score}->badd($diff) unless($diff->copy->babs > $maxinc);
+               my $diff = $score - $$stats{$3}{lastscore};
+               $$stats{$3}{score} += $diff unless(abs($diff) > $maxinc);
             }
             else {
-               $$stats{$3}{score}->badd($score) unless($score->copy->babs > $maxinc);
+               $$stats{$3}{score} += $score unless(abs($score) > $maxinc);
             }
          }
 
@@ -158,7 +149,7 @@ while (my $line = shift(@lines2)) {
       $$stats{$3}{name}       = $1;
       $$stats{$3}{id}         = $2;
       $$stats{$3}{idx}        = $idx;
-      $$stats{$3}{lastscore}  = $lastscore->copy;
+      $$stats{$3}{lastscore}  = $4;
       $$stats{$3}{lastdeaths} = $5;
       $$stats{$3}{datapoints}++;
       $$stats{$3}{wasseen}    = 1;
@@ -186,18 +177,18 @@ for (keys %{$stats}) {
       $_,
       defined $$stats{$_}{name}          ? $$stats{$_}{name}       : undef,
       defined $$stats{$_}{id}            ? $$stats{$_}{id}         : undef,
-      defined $$stats{$_}{score}         ? $$stats{$_}{score}      : 0,
-      defined $$stats{$_}{lastscore}     ? $$stats{$_}{lastscore}  : 0,
+      defined $$stats{$_}{score}         ? sprintf('%.2f', $$stats{$_}{score})     : 0,
+      defined $$stats{$_}{lastscore}     ? sprintf('%.2f', $$stats{$_}{lastscore}) : 0,
       defined $$stats{$_}{deaths}        ? $$stats{$_}{deaths}     : 0,
       defined $$stats{$_}{lastdeaths}    ? $$stats{$_}{lastdeaths} : 0,
-      defined $$stats{$_}{oldscore}      ? $$stats{$_}{score}->copy->bsub($$stats{$_}{oldscore}) : 0,
-      defined $$stats{$_}{olddeaths}     ? $$stats{$_}{deaths}-$$stats{$_}{olddeaths}            : 0,
+      defined $$stats{$_}{oldscore}      ? sprintf('%.2f', $$stats{$_}{score}-$$stats{$_}{oldscore}) : 0,
+      defined $$stats{$_}{olddeaths}     ? $$stats{$_}{deaths}-$$stats{$_}{olddeaths} : 0,
       defined $$stats{$_}{joins}         ? $$stats{$_}{joins}      : 1,
       defined $country                   ? $country                : defined $$stats{$_}{geo}  ? $$stats{$_}{geo}  : undef,
       defined $lat                       ? $lat                    : defined $$stats{$_}{lat}  ? $$stats{$_}{lat}  : undef,
       defined $lon                       ? $lon                    : defined $$stats{$_}{lon}  ? $$stats{$_}{lon}  : undef,
       defined $$stats{$_}{datapoints}    ? $$stats{$_}{datapoints} : 0,
-      defined $$stats{$_}{olddatapoints} ? $$stats{$_}{datapoints}-$$stats{$_}{olddatapoints}    : 0,
+      defined $$stats{$_}{olddatapoints} ? $$stats{$_}{datapoints}-$$stats{$_}{olddatapoints}  : 0,
       defined $$stats{$_}{wasseen}       ? $today                  : defined $$stats{$_}{seen} ? $$stats{$_}{seen} : undef
    );
 }
