@@ -38,6 +38,7 @@ Same principle as `svenstats.pl` but without a database and thus only for one lo
   * File::Basename
   * LWP::UserAgent
   * JSON
+  * Encode::Simple
 
 ## Get started
 1. Configure the Discord webhook URL: `$url` in `svenstats_oneshot.pl` 
