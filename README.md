@@ -37,6 +37,7 @@ Same principle as `svenstats.pl` but without a database and thus only for one lo
   * File::Slurp
   * File::Basename
   * LWP::UserAgent
+  * Encode::Simple
   * JSON
   * JSON::XS (optional)
 
