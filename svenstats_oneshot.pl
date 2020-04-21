@@ -19,7 +19,7 @@ use File::Slurp;
 use File::Basename;
 use LWP::UserAgent;
 use JSON;
-use Encode::Simple qw(encode_utf8 decode_utf8);
+use Encode::Simple qw(encode_utf8_lax decode_utf8_lax);
 
 ### config
 
@@ -51,7 +51,7 @@ my @lines = read_file( $ARGV[0], binmode => ':raw', chomp => 1 ) ;
 while (my $in = splice(@lines, 0, 1)) {
    next if (length($in) < 28);
 
-   my $line = decode_utf8(substr($in, 0, 2).substr($in, 25));
+   my $line = decode_utf8_lax(substr($in, 0, 2).substr($in, 25));
 
    if ($line =~ /^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><>" connected, address "([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}):/) {
       $$stats{$3}{name} = $1;
