@@ -18,7 +18,7 @@ use MaxMind::DB::Reader;
 use File::Slurp;
 use File::Basename;
 use LWP::UserAgent;
-use JSON;
+use JSON::MaybeXS;
 use Encode::Simple qw(encode_utf8_lax decode_utf8_lax);
 
 ### config
