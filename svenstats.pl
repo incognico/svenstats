@@ -88,8 +88,8 @@ my $res = $dbh->selectrow_hashref('SELECT hold FROM misc WHERE rowid = 1');
 $hold = $$res{hold} if(defined $$res{hold});
 
 my $addr_re = qr'^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><>" connected, address "([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}):';
-my $entr_re = qr'^L ".+<[0-9]+><STEAM_(0:[01]:[0-9]+)><players>" has entered the game';
-my $stat_re = qr'^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><players>" stats: frags="(-?[0-9]+\.[0-9]{2})" deaths="([0-9]+)"';
+my $entr_re = qr'^L ".+<[0-9]+><STEAM_(0:[01]:[0-9]+)><players?>" has entered the game';
+my $stat_re = qr'^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><players?>" stats: frags="(-?[0-9]+\.[0-9]{2})" deaths="([0-9]+)"';
 my $blck_re = qr'^L Started map "(.+)" \(CRC "-?[0-9]+"\)';
 
 while (my $line = shift(@lines2)) {

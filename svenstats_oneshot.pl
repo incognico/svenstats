@@ -60,10 +60,10 @@ while (my $in = splice(@lines, 0, 1)) {
       $$stats{$3}{joins}++;
       $$stats{$3}{datapoints} = 0 unless(defined $$stats{$3}{datapoints});
    }
-   elsif ($line =~ /^L ".+<[0-9]+><STEAM_(0:[01]:[0-9]+)><players>" has entered the game/) {
+   elsif ($line =~ /^L ".+<[0-9]+><STEAM_(0:[01]:[0-9]+)><players?>" has entered the game/) {
       $$stats{$1}{joins}++;
    }
-   elsif ($line =~ /^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><players>" stats: frags="(-?[0-9]+\.[0-9]{2})" deaths="([0-9]+)"/) {
+   elsif ($line =~ /^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><players?>" stats: frags="(-?[0-9]+\.[0-9]{2})" deaths="([0-9]+)"/) {
       $$stats{$3}{score}      = 0 unless(defined $$stats{$3}{score});
       $$stats{$3}{lastscore}  = 0 unless(defined $$stats{$3}{lastscore});
       $$stats{$3}{deaths}     = 0 unless(defined $$stats{$3}{deaths});
