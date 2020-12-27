@@ -72,7 +72,7 @@ my $where = 'steamid64 IN (';
 $where .= $_ . ',' foreach (keys %ids);
 $where = substr($where, 0, -1) . ')';
 
-$stats = $dbh->selectall_hashref('SELECT steamid, name, id, score, lastscore, deaths, lastdeaths, joins, geo, lat, lon, datapoints, seen FROM stats WHERE ' . $where, 'steamid');
+$stats = $dbh->selectall_hashref('SELECT steamid, name, id, score, lastscore, deaths, lastdeaths, joins, geo, lat, lon, datapoints, seen, first FROM stats WHERE ' . $where, 'steamid');
 
 for (keys %{$stats}) {
    $$stats{$_}{oldscore}      = $$stats{$_}{score}                     if(defined $$stats{$_}{score});
@@ -89,7 +89,7 @@ $hold = $$res{hold} if(defined $$res{hold});
 
 my $addr_re = qr'^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><>" connected, address "([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}):';
 my $entr_re = qr'^L ".+<[0-9]+><STEAM_(0:[01]:[0-9]+)><players?>" has entered the game';
-my $stat_re = qr'^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><players?>" stats: frags="(-?[0-9]+\.[0-9]{2})" deaths="([0-9]+)"';
+my $stat_re = qr'^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><[a-z_-]+>" stats: frags="(-?[0-9]+\.[0-9]{2})" deaths="([0-9]+)"';
 my $blck_re = qr'^L Started map "(.+)" \(CRC "-?[0-9]+"\)';
 
 while (my $line = shift(@lines2)) {
@@ -156,7 +156,7 @@ while (my $line = shift(@lines2)) {
 }
 
 my $gi  = MaxMind::DB::Reader->new(file => $geo);
-my $sth = $dbh->prepare('REPLACE INTO stats (steamid64, steamid, name, id, score, lastscore, deaths, lastdeaths, scoregain, deathgain, joins, geo, lat, lon, datapoints, datapointgain, seen) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
+my $sth = $dbh->prepare('REPLACE INTO stats (steamid64, steamid, name, id, score, lastscore, deaths, lastdeaths, scoregain, deathgain, joins, geo, lat, lon, datapoints, datapointgain, seen, first) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
 
 for (keys %{$stats}) {
    my ($country, $lat, $lon);
@@ -188,7 +188,8 @@ for (keys %{$stats}) {
       defined $lon                       ? $lon                    : defined $$stats{$_}{lon}  ? $$stats{$_}{lon}  : undef,
       defined $$stats{$_}{datapoints}    ? $$stats{$_}{datapoints} : 0,
       defined $$stats{$_}{olddatapoints} ? $$stats{$_}{datapoints}-$$stats{$_}{olddatapoints}  : 0,
-      defined $$stats{$_}{wasseen}       ? $today                  : defined $$stats{$_}{seen} ? $$stats{$_}{seen} : undef
+      defined $$stats{$_}{wasseen}       ? $today                  : defined $$stats{$_}{seen} ? $$stats{$_}{seen} : undef,
+      defined $$stats{$_}{first}         ? $$stats{$_}{first}      : $today
    );
 }
 $dbh->commit;

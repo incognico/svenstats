@@ -30,7 +30,8 @@ my $inline   = 0;
 my $steam    = 0;
 my $steamkey = '';
 my $geo      = "$ENV{'HOME'}/gus/GeoLite2-City.mmdb";
-my $discord_markdown_pattern = qr/(?<!\\)(`|@|:|#|\||__|\*|~|>)/;
+#my $discord_markdown_pattern = qr/(?<!\\)(`|@|:|#|\||__|\*|~|>)/;
+my $discord_markdown_pattern = qr/(?<!\\)(`|@|#|\||__|\*|~|>)/;
 my @colors   = qw(1752220 3066993 3447003 10181046 15844367 15105570 15158332 9807270 8359053 3426654 1146986 2067276 2123412 7419530 12745742 11027200 10038562 9936031 12370112 2899536);
 
 ###
@@ -63,7 +64,7 @@ while (my $in = splice(@lines, 0, 1)) {
    elsif ($line =~ /^L ".+<[0-9]+><STEAM_(0:[01]:[0-9]+)><players?>" has entered the game/) {
       $$stats{$1}{joins}++;
    }
-   elsif ($line =~ /^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><players?>" stats: frags="(-?[0-9]+\.[0-9]{2})" deaths="([0-9]+)"/) {
+   elsif ($line =~ /^L "(.+)<([0-9]+)><STEAM_(0:[01]:[0-9]+)><[a-z_-]+>" stats: frags="(-?[0-9]+\.[0-9]{2})" deaths="([0-9]+)"/) {
       $$stats{$3}{score}      = 0 unless(defined $$stats{$3}{score});
       $$stats{$3}{lastscore}  = 0 unless(defined $$stats{$3}{lastscore});
       $$stats{$3}{deaths}     = 0 unless(defined $$stats{$3}{deaths});
