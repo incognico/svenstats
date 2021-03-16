@@ -31,7 +31,7 @@ my $steam    = 0;
 my $steamkey = '';
 my $geo      = "$ENV{'HOME'}/gus/GeoLite2-City.mmdb";
 #my $discord_markdown_pattern = qr/(?<!\\)(`|@|:|#|\||__|\*|~|>)/;
-my $discord_markdown_pattern = qr/(?<!\\)(`|@|#|\||__|\*|~|>)/;
+my $discord_markdown_pattern = qr/(?<!\\)(`|@|#|\||_|\*|~|>)/;
 my @colors   = qw(1752220 3066993 3447003 10181046 15844367 15105570 15158332 9807270 8359053 3426654 1146986 2067276 2123412 7419530 12745742 11027200 10038562 9936031 12370112 2899536);
 
 ###
