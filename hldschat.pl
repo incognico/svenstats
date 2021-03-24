@@ -29,7 +29,7 @@ unless (open my $fh, '<', $ARGV[0]) {
 else {
    while (my $line = <$fh>) {
       chomp $line;
-      push(@chats, sprintf('%s %s: %s', $1, encode_entities($2, '<>&"'), encode_entities($4, '<>&"'))) if ($line =~ m!^L [0-9]{2}/[0-9]{2}/[0-9]{4} - ([0-9]{2}:[0-9]{2}:[0-9]{2}): "(.+)<[0-9]+><STEAM_(0:[01]:[0-9]+)><players>" say "(.+)"$!);
+      push(@chats, sprintf('%s %s: %s', $1, encode_entities($2, '<>&"'), encode_entities($4, '<>&"'))) if ($line =~ m!^L [0-9]{2}/[0-9]{2}/[0-9]{4} - ([0-9]{2}:[0-9]{2}:[0-9]{2}): "(.+)<[0-9]+><STEAM_(0:[01]:[0-9]+)><[a-z_-]+>" say "(.+)"$!);
    }
    close $fh;
 }
