@@ -19,7 +19,7 @@ use File::Slurp;
 use File::Basename;
 use LWP::UserAgent;
 use JSON::MaybeXS;
-use Encode::Simple qw(encode_utf8_lax decode_utf8_lax);
+use Encode::Simple qw(decode_utf8_lax);
 
 ### config
 

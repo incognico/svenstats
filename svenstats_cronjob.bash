@@ -5,11 +5,11 @@
 # Example crontab entry to copy the log from yesterday to $statslogpath and generate stats from it at 00:05:
 # 5 0 * * * /bin/bash /path/to/this/script/svenstats_cronjob.bash
 
-#  Yesterday:
+#  Yesterday (actually exactly 24h ago, which does work for forward DST changes so we just use 12 hours ago):
 #     FreeBSD:   date -v-1d "+%Y-%m-%d"
 #     GNU/Linux: date --date='1 day ago' "+%Y-%m-%d"
 
-yesterday=$(date --date='1 day ago' "+%Y-%m-%d")
+yesterday=$(date --date='12 hours ago' "+%Y-%m-%d")
 svenstats="/home/svends/scstats/svenstats.pl"
 svenstatsos="/home/svends/scstats/svenstats_oneshot.pl"
 svenstatsdb="/home/svends/scstats/scstats.db"
