@@ -2,7 +2,7 @@
 Log parser for Sven Co-op dedicated servers (SvenDS) logs, to gather player statistics (name, score, deaths, country, etc.).
 
 ## Notes
-* Assumes log file rotation ~~every 24h at midnight~~ (default SvenDS log settings)
+* Assumes default SvenDS log settings (`sv_log_daily 1`, `sv_log_onefile 0`)
 * `sv_log_player_frequency` should be consistent for every log file to calculate playtime from the 'datapoints' value
 * Score differences achived by players before a map ends may be lost for up to a maximum of the `sv_log_player_frequency` value (seconds). This is due to the nature of how the logging works and thus the gathered stats are not 100% accurate, but still good enough :)
 * 'joins' are not acual joins, merely a hack to get a better session id ('idx')
