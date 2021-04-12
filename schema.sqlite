@@ -15,7 +15,8 @@ CREATE TABLE stats(
    lon           real,
    datapoints    integer,
    datapointgain integer,
-   seen          text
+   seen          text,
+   first         text
 );
 CREATE TABLE maps(
    map           text      primary key,
