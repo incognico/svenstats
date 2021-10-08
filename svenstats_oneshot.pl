@@ -2,7 +2,7 @@
 
 # Sven Co-op (svends) log parser "svenstats_oneshot.pl - Top players -> discord webhook"
 #
-# Copyright 2016-2020, Nico R. Wohlgemuth <nico@lifeisabug.com>
+# Copyright 2016-2021, Nico R. Wohlgemuth <nico@lifeisabug.com>
 
 use 5.16.0;
 
@@ -115,7 +115,7 @@ my $msg = {
 };
 
 my $gi = MaxMind::DB::Reader->new(file => $geo);
-my $c = 0;
+my ($n, $c) = (0, 0);
 
 foreach my $key (sort { $$stats{$b}{datapoints} <=> $$stats{$a}{datapoints} } keys %{$stats}) {
    if ($$stats{$key}{datapoints} > 10) {
@@ -126,12 +126,15 @@ foreach my $key (sort { $$stats{$b}{datapoints} <=> $$stats{$a}{datapoints} } ke
          $country = lc($record->{country}{iso_code}) if($record);
 
          push @{$$msg{'embeds'}[0]{'fields'}}, { 'name' => sprintf(":flag_%s: **%s**", defined $country ? $country : 'white', discord($$stats{$key}{name})), 'value' => sprintf("#**%s** Playtime: **%s** Score: **%s** Deaths: **%s**", $c+1, duration($$stats{$key}{datapoints}*30), int($$stats{$key}{score}), $$stats{$key}{deaths}), 'inline' => \$inline, 'steamid64' => idto64($key) };
+
+         $n++;
       }
    }
 
    $c++; last if ($c >= $num);
 }
 
+exit unless ($n > 0);
 my $rc = @{$$msg{'embeds'}[0]{'fields'}};
 $$msg{'embeds'}[0]{'title'} = ":trophy: Top $rc players in the last 24h";
 

@@ -2,7 +2,7 @@
 
 # HLDS chat log parser "hldschat.pl", generates chat log files in HTML
 #
-# Copyright 2017, Nico R. Wohlgemuth <nico@lifeisabug.com>
+# Copyright 2017-2021, Nico R. Wohlgemuth <nico@lifeisabug.com>
 
 use 5.16.0;
 

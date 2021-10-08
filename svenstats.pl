@@ -2,7 +2,7 @@
 
 # Sven Co-op (svends) log parser "svenstats.pl"
 #
-# Copyright 2016-2020, Nico R. Wohlgemuth <nico@lifeisabug.com>
+# Copyright 2016-2021, Nico R. Wohlgemuth <nico@lifeisabug.com>
 
 use 5.16.0;
 
