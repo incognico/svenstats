@@ -125,7 +125,7 @@ foreach my $key (sort { $$stats{$b}{datapoints} <=> $$stats{$a}{datapoints} } ke
          my $record  = $gi->record_for_address($$stats{$key}{ip});
          $country = lc($record->{country}{iso_code}) if($record);
 
-         push @{$$msg{'embeds'}[0]{'fields'}}, { 'name' => sprintf(":flag_%s: **%s**", defined $country ? $country : 'white', discord($$stats{$key}{name})), 'value' => sprintf("#**%s** Playtime: **%s** Score: **%s** Deaths: **%s**", $c+1, duration($$stats{$key}{datapoints}*30), int($$stats{$key}{score}), $$stats{$key}{deaths}), 'inline' => \$inline, 'steamid64' => idto64($key) };
+         push @{$$msg{'embeds'}[0]{'fields'}}, { 'name' => sprintf(":flag_%s: **%s**", defined $country ? $country : 'white', discord($$stats{$key}{name})), 'value' => sprintf("#**%s** Playtime: **%s** Score: **%s** Deaths: **%s**", $n+1, duration($$stats{$key}{datapoints}*30), int($$stats{$key}{score}), $$stats{$key}{deaths}), 'inline' => \$inline, 'steamid64' => idto64($key) };
 
          $n++;
       }
