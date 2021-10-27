@@ -17,6 +17,7 @@ Log parser for Sven Co-op dedicated servers (SvenDS) logs, to gather player stat
   * File::Slurp
   * File::Basename
 * SQLite 3
+* xz-utils
 
 ## Get started
 1. `sqlite3 scstats.db < schema.sqlite`
