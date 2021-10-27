@@ -24,6 +24,6 @@ $svenstatsos "${statslogpath}/${yesterday}.log"
 $svenstats "${statslogpath}/${yesterday}.log"
 #$hldschat "${statslogpath}/${yesterday}.log" >> "${chatlogpath}/${yesterday}.html"
 
-gzip "${statslogpath}/${yesterday}.log"
+xz "${statslogpath}/${yesterday}.log"
 
 #sqlite3 -list -separator ' ' $svenstatsdb 'select steamid,cast(score + 0.5 as int),deaths from stats where score >5000 order by score desc' | cat -n | sed -e "s/[[:space:]]\+/ /g" | cut -c 2- > $twlzstatsfile

@@ -9,11 +9,11 @@ logp="/home/svends/scstats/logs"
 
 sqlite3 "$db" < "$schema"
 
-for i in "$logp"/*.gz
+for i in "$logp"/*.xz
 do
-   tmp=/tmp/$(basename $i .gz)
+   tmp=/tmp/$(basename $i .xz)
    echo "processing: $tmp"
-   zcat $i > $tmp
+   xzcat $i > $tmp
    $bin $tmp
    rm $tmp
 done
