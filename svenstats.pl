@@ -56,7 +56,7 @@ my %ids;
 my @lines2;
 my $re = qr'^L ".+<[0-9]+><STEAM_(0:[01]:[0-9]+)><';
 
-while (my $in = shift(@lines)) {
+for my $in (@lines) {
    next if (length($in) < 28);
 
    my $line = substr($in, 0, 2).substr($in, 25);
@@ -65,6 +65,7 @@ while (my $in = shift(@lines)) {
 
    $ids{idto64($1)}++ if ($line =~ $re);
 }
+@lines = ();
 
 exit unless (keys %ids > 0);
 

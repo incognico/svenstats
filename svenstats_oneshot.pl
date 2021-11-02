@@ -49,7 +49,7 @@ my $stats;
 my $today = fileparse( $ARGV[0], qw(.log) );
 my @lines = read_file( $ARGV[0], binmode => ':raw', chomp => 1 ) ;
 
-while (my $in = splice(@lines, 0, 1)) {
+for my $in (@lines) {
    next if (length($in) < 28);
 
    my $line = decode_utf8_lax(substr($in, 0, 2).substr($in, 25));
