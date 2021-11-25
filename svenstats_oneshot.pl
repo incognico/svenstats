@@ -4,22 +4,23 @@
 #
 # Copyright 2016-2021, Nico R. Wohlgemuth <nico@lifeisabug.com>
 
-use 5.16.0;
+use 5.20.0;
 
 use utf8; 
 use strict; 
 use warnings; 
+use autodie ':all';
 
-use autodie;
+use feature 'signatures';
+no warnings qw(experimental::signatures experimental::smartmatch);
 
-no warnings 'experimental::smartmatch';
-
-use MaxMind::DB::Reader;
-use File::Slurp;
-use File::Basename;
-use LWP::UserAgent;
-use JSON::MaybeXS;
 use Encode::Simple qw(decode_utf8_lax);
+use File::Basename;
+use File::Slurp;
+use JSON::MaybeXS;
+use LWP::UserAgent;
+use MaxMind::DB::Reader;
+use POSIX 'floor';
 
 ### config
 
@@ -32,7 +33,6 @@ my $steamkey = '';
 my $geo      = "$ENV{'HOME'}/gus/GeoLite2-City.mmdb";
 #my $discord_markdown_pattern = qr/(?<!\\)(`|@|:|#|\||__|\*|~|>)/;
 my $discord_markdown_pattern = qr/(?<!\\)(`|@|#|\||_|\*|~|>)/;
-my @colors   = qw(1752220 3066993 3447003 10181046 15844367 15105570 15158332 9807270 8359053 3426654 1146986 2067276 2123412 7419530 12745742 11027200 10038562 9936031 12370112 2899536);
 
 ###
 
@@ -106,7 +106,7 @@ my $msg = {
    'content' => '',
    'embeds' => [
       {
-         'color' => $colors[rand @colors],
+         'color' => randcol(),
          'footer' => {
             'text' => $today . ' - Unique players: ' . scalar keys %{$stats},
          },
@@ -164,16 +164,13 @@ $ua->request( $r );
 
 ###
 
-sub discord {
-   my $string = shift || return 0;
+sub discord ($string = '') {
    $string =~ s/$discord_markdown_pattern/\\$1/g;
 
    return $string;
 }
 
-sub duration {
-   my $sec = shift;
-
+sub duration ($sec = 0) {
    return '?' unless ($sec);
 
    my @gmt = gmtime($sec);
@@ -185,10 +182,42 @@ sub duration {
             ($gmt[1] ? ($gmt[5] || $gmt[7] || $gmt[2]            ? ' ' : '').$gmt[1].'m' : '');
 }
 
-sub idto64 {
-   my $id = shift || return 0;
+sub idto64 ($id) {
    my (undef, $authbit, $accnum) = split(':', $id);
    my $id64 = (($accnum * 2) + 76561197960265728 + $authbit);
 
    return $id64;
+}
+
+sub randcol () {
+   my ($h, $s, $v) = (rand(360)/60, 0.5+rand(0.5), 0.9+rand(0.1));
+
+   my $i = floor( $h );
+   my $f = $h - $i;
+   my $p = $v * ( 1 - $s );
+   my $q = $v * ( 1 - $s * $f );
+   my $t = $v * ( 1 - $s * ( 1 - $f ) );
+
+   my ($r, $g, $b);
+
+   if ( $i == 0 ) {
+      ($r, $g, $b) = ($v, $t, $p);
+   }
+   elsif ( $i == 1 ) {
+      ($r, $g, $b) = ($q, $v, $p);
+   }
+   elsif ( $i == 2 ) {
+      ($r, $g, $b) = ($p, $v, $t);
+   }
+   elsif ( $i == 3 ) {
+      ($r, $g, $b) = ($p, $q, $v);
+   }
+   elsif ( $i == 4 ) {
+      ($r, $g, $b) = ($t, $p, $v);
+   }
+   else {
+      ($r, $g, $b) = ($v, $p, $q);
+   }
+
+   return hex(sprintf('0x%02x%02x%02x', int(floor($r*255)), int(floor($g*255)), int(floor($b*255))));
 }
