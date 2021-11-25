@@ -32,7 +32,7 @@ Same principle as `svenstats.pl` but without a database and thus only for one lo
 
 ## Requirements
 * SvenDS log files
-* Perl >=5.16
+* Perl >=5.20
   * MaxMind::DB::Reader (and [GeoLite2-City.mmdb](https://dev.maxmind.com/geoip/geoip2/geolite2/))
   * MaxMind::DB::Reader::XS (optional but much faster, requires [libmaxminddb](http://maxmind.github.io/libmaxminddb/))
   * File::Slurp
