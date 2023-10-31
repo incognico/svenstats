@@ -25,7 +25,7 @@ use POSIX 'floor';
 ### config
 
 my $maxinc   = 65534; # maximum score difference between two datapoints to prevent arbitrary player scores set by some maps
-my $url      = '';
+my $url      = 'https://discordapp.com/api/webhooks/...';
 my $num      = 25;
 my $inline   = 0;
 my $steam    = 0;
@@ -45,7 +45,7 @@ elsif (! -f $ARGV[0] || ! -r $ARGV[0]) {
    exit;
 }
 
-my $stats;
+my ($stats, $alldatapoints) = ({}, 0);
 my $today = fileparse( $ARGV[0], qw(.log) );
 my @lines = read_file( $ARGV[0], binmode => ':raw', chomp => 1 ) ;
 
@@ -99,6 +99,7 @@ for my $in (@lines) {
       $$stats{$3}{lastscore}  = $4;
       $$stats{$3}{lastdeaths} = $5;
       $$stats{$3}{datapoints}++;
+      $alldatapoints++;
    }
 }
 
@@ -108,7 +109,7 @@ my $msg = {
       {
          'color' => randcol(),
          'footer' => {
-            'text' => $today . ' - Unique players: ' . scalar keys %{$stats},
+            'text' => $today . ' - Unique players: ' . (scalar keys $stats->%*) . ' - Combined playtime: ' . duration($alldatapoints*30),
          },
       },
    ],
